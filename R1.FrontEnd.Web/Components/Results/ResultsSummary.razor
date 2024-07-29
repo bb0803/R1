@@ -1,0 +1,13 @@
+﻿@namespace R1.FrontEnd.Web.Components.Results
+@if (@message != "")
+{
+    <div class="alert alert-danger">
+        <h4>@message</h4>
+    </div>
+}
+<p>Results Summary</p>
+
+@code {
+    [Parameter]
+    public string message { get; set; } = string.Empty;
+}

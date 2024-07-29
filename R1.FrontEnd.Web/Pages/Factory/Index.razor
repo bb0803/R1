@@ -1,0 +1,33 @@
+﻿@page "/factory/"
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Components.Cars
+@using R1.FrontEnd.Web.Components.Drivers
+@using R1.FrontEnd.Web.Components.Results
+@using R1.FrontEnd.Web.Components.Shared
+@using R1.FrontEnd.Web.Components.Team
+
+<PageTitle>R1 - Factory</PageTitle>
+<h3>Factory</h3>
+<CalendarSummary />
+<div class="row">
+    <ChassisCard />
+</div>
+<div class="row">
+    <div class="col-6">
+        <DriverCard />
+    </div>
+    <div class="col-6">
+        <DriverCard />
+    </div>
+</div>
+<div class="row">
+    <ResultsSummary />
+</div>
+<div class="row">
+    <CalendarDetail />
+</div>
+<div class="row">
+    <StaffSummary />
+</div>
+

@@ -1,0 +1,72 @@
+﻿@page "/results/"
+@inject ISessionLapTimeService sessionLapTimeService
+@inject IJSRuntime js
+@using R1.FrontEnd.WA.Models.Data
+@using R1.FrontEnd.WA.Models.API
+@using R1.FrontEnd.WA.Components
+@using R1.FrontEnd.WA.Services.Interfaces
+@using Newtonsoft.Json
+
+<PageTitle>R1 - SessionLapTimes</PageTitle>
+<h3>SessionLapTimes</h3>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(SessionLapTimes == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+        <Access Role="Administrator" type="visible" >
+            <ChildContent>
+                <a class="btn btn-secondary float-end" href="/sessionLapTimes/create" title="Create"><span class="oi oi-plus" aria-hidden="true"></span> Create</a>
+            </ChildContent>
+        </Access>
+        <br/>
+        <SessionLapTimeTable SessionLapTimes="SessionLapTimes" TotalSize="TotalSize" OnScroll="LoadSessionLapTimes"  OnDeleted="Delete"/>
+    }
+}
+
+
+@code {
+    public List<SessionLapTime> SessionLapTimes;
+    public int TotalSize { get; set; }
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    protected Virtualize<SessionLapTimeTable> ChildComponent;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        response = await sessionLapTimeService.GetAllSessionLapTimesAsync();
+        if (response.IsSuccess)
+        {
+            SessionLapTimes = JsonConvert.DeserializeObject<List<SessionLapTime>>(Convert.ToString(response.Result));
+        }
+    }
+
+    private async Task LoadSessionLapTimes()
+    {
+        var virtualizeResult = await sessionLapTimeService.GetAllSessionLapTimesAsync();
+        SessionLapTimes = JsonConvert.DeserializeObject<List<SessionLapTime>>(Convert.ToString(virtualizeResult.Result));
+        //TotalSize = virtualizeResult.TotalSize;
+    }
+
+    private async Task Delete(int sessionLapTimeId)
+    {
+        var response = await sessionLapTimeService.DeleteSessionLapTimeAsync(sessionLapTimeId);
+        if (response.IsSuccess)
+        {
+            await ChildComponent?.RefreshDataAsync();
+            StateHasChanged();
+        }
+    }
+}

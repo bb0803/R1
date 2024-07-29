@@ -1,0 +1,54 @@
+﻿@namespace R1.FrontEnd.Web.Components.Cars
+@inject ICarService carService
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using Newtonsoft.Json
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Models.Shared
+@using R1.FrontEnd.Web.Services.Interfaces
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Power</th>
+            <th>Cost</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (AvailableEngineDto engine in dataset)
+        {
+            <tr>
+                <td>@engine.EngineName</td>
+                <td>@engine.Rating</td>
+                <td>@string.Format("{0:$#,##0}", engine.Cost) (@string.Format("{0:$#,##0}", engine.AdditionalEngineCost))</td>
+                <td>
+                    <button class="btn btn-outline-primary" @onclick="@(() => Purchase(@engine.Id))"> <span class="oi oi-plus" aria-hidden="true"></span> Purchase </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<AvailableEngineDto> dataset { get; set; }
+
+    private async Task Purchase(int engineId)
+    {
+        var thisEngine = dataset.First(q => q.Id == engineId);
+        var confirm = await js.InvokeAsync<bool>("confirm", $"Are You Sure You Want To purchase {thisEngine.EngineName} as your engine supplier?");
+        if (confirm)
+        {
+            await carService.PurchaseEngineAsync(engineId);
+            navman.NavigateTo("/teamsetup/drivers");
+            //await OnDeleted.InvokeAsync(sessionLapTimeId);
+        }
+    }
+
+
+
+    
+}

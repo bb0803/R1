@@ -1,0 +1,12 @@
+﻿@namespace R1.FrontEnd.WA.Components
+@if (@message != "")
+{
+    <div class="alert alert-danger">
+        <h4>@message</h4>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string message { get; set; } = string.Empty;
+}

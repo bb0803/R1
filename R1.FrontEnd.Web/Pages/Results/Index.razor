@@ -1,0 +1,60 @@
+﻿@page "/results/"
+@inject IResultService resultService
+@inject IJSRuntime js
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Components
+@using R1.FrontEnd.Web.Services.Interfaces
+@using Newtonsoft.Json
+
+<PageTitle>R1 - Results</PageTitle>
+<h3>SessionLapTimes</h3>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(results == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+
+                <a class="btn btn-secondary float-end" href="/sessionLapTimes/create" title="Create"><span class="oi oi-plus" aria-hidden="true"></span> Create</a>
+
+        <br/>
+        <SessionLapTimeTable SessionLapTimes="SessionLapTimes" TotalSize="TotalSize" OnScroll="LoadSessionLapTimes"  OnDeleted="Delete"/>
+    }
+}
+
+
+@code {
+    public List<SessionLapTime> results;
+    public int TotalSize { get; set; }
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    protected Virtualize<SessionLapTime> ChildComponent;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        response = await resultService.GetSessionLapTimesAsync();
+        if (response.IsSuccess)
+        {
+            results = JsonConvert.DeserializeObject<List<SessionLapTime>>(Convert.ToString(response.Result));
+        }
+    }
+
+    private async Task LoadSessionLapTimes()
+    {
+        var virtualizeResult = await resultService.GetSessionLapTimesAsync();
+        results = JsonConvert.DeserializeObject<List<SessionLapTime>>(Convert.ToString(virtualizeResult.Result));
+        //TotalSize = virtualizeResult.TotalSize;
+    }
+}

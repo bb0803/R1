@@ -1,0 +1,46 @@
+﻿@page "/account/login"
+@inject IAuthService authService
+@inject NavigationManager navManager
+@using R1.FrontEnd.Web.Services.Interfaces
+@using R1.FrontEnd.Web.Models;
+@using R1.FrontEnd.Web.Models.User;
+
+<h3>Login</h3>
+<ErrorMessage message="@message" />
+
+<div>
+    <EditForm Model="LoginModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <InputText class="form-control" @bind-Value="LoginModel.UserName" />
+            <ValidationMessage For="@(() => LoginModel.UserName)" />
+        </div>
+        <br/>
+        <div class="form-group">
+            <label for="email">Password</label>
+            <InputText class="form-control" type="password" @bind-Value="LoginModel.Password" />
+            <ValidationMessage For="@(() => LoginModel.Password)" />
+        </div>
+        <br/>
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+    </EditForm>
+
+</div>
+
+@code {
+    LoginRequestDto LoginModel = new LoginRequestDto();
+    string message = string.Empty;
+    public async Task HandleLogin()
+    {
+        var response = await authService.LoginAsync(LoginModel);
+
+        if (response.IsSuccess)
+        {        
+            navManager.NavigateTo("/");
+        }
+        
+        message = response.Message;
+    }
+}

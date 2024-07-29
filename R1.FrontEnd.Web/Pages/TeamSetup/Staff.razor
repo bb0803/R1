@@ -1,0 +1,142 @@
+﻿@page "/teamsetup/staff/"
+@inject ITeamService teamService
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Components
+@using R1.FrontEnd.Web.Components.Team
+@using R1.FrontEnd.Web.Services.Interfaces
+@using Newtonsoft.Json
+
+<PageTitle>R1 - Team Setup</PageTitle>
+<h3>Hire Staff</h3>
+
+@if (message != "")
+{
+    <div class="alert alert-danger">
+        <h4>@message</h4>
+    </div>
+}
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(availableStaff == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+        @if (_hiredTeamManager && _hiredChiefEngineer && _hiredMechanic && _hiredPitCrew)
+        {
+            <button class="btn btn-primary" @onclick="@(() => HireAll())"> <span class="oi oi-plus" aria-hidden="true"></span> Hire all selected staff </button>
+        } else
+        {
+            <p>You need to hire at least a team manager, chief engineer, mechanic and pit crew.</p>
+        }
+
+        <AvailableStaffTable dataset="availableStaff" StaffType="Team Manager" LimitTo="1" @bind-Status="_hiredTeamManager" @bind-HiredList="_hiredTeamManagerList" />
+        <AvailableStaffTable dataset="availableStaff" StaffType="Chief Engineer" LimitTo="1" @bind-Status="_hiredChiefEngineer" @bind-HiredList="_hiredChiefEngineerList" />
+        <AvailableStaffTable dataset="availableStaff" StaffType="Engineer" LimitTo="1" @bind-Status="_hiredEngineer" @bind-HiredList="_hiredEngineerList" />
+        <AvailableStaffTable dataset="availableStaff" StaffType="Mechanic" LimitTo="5" @bind-Status="_hiredMechanic" @bind-HiredList="_hiredMechanicList" />
+        <AvailableStaffTable dataset="availableStaff" StaffType="Data Analyst" LimitTo="3" @bind-Status="_hiredDataAnalyst" @bind-HiredList="_hiredDataAnalystList" />
+        <AvailableStaffTable dataset="availableStaff" StaffType="Pit Crew" LimitTo="1" @bind-Status="_hiredPitCrew" @bind-HiredList="_hiredPitCrewList" />
+    }
+}
+
+@code {
+    public List<AvailableStaffDto> availableStaff;
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    private string message = "";
+    private bool _hiredTeamManager;
+    private bool _hiredChiefEngineer;
+    private bool _hiredEngineer;
+    private bool _hiredMechanic;
+    private bool _hiredDataAnalyst;
+    private bool _hiredPitCrew;
+    private List<AvailableStaffDto> _hiredTeamManagerList;
+    private List<AvailableStaffDto> _hiredChiefEngineerList;
+    private List<AvailableStaffDto> _hiredEngineerList;
+    private List<AvailableStaffDto> _hiredMechanicList;
+    private List<AvailableStaffDto> _hiredDataAnalystList;
+    private List<AvailableStaffDto> _hiredPitCrewList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        response = await teamService.GetAvailableStaffAsync();
+        if (response.IsSuccess)
+        {
+            availableStaff = JsonConvert.DeserializeObject<List<AvailableStaffDto>>(Convert.ToString(response.Result));
+        }
+    }
+
+    private async Task HireAll()
+    {
+        try
+        {
+            //Team Manager
+            if (_hiredTeamManagerList != null)
+            {
+                foreach (AvailableStaffDto staff in _hiredTeamManagerList)
+                {
+                    await teamService.HireStaffAsync(staff);
+                }
+            }
+            //Chief Engineer
+            if (_hiredChiefEngineerList != null)
+            {
+                foreach (AvailableStaffDto staff in _hiredChiefEngineerList)
+                {
+                    await teamService.HireStaffAsync(staff);
+                }
+            }
+            //Engineer
+            if (_hiredEngineerList != null)
+            {
+                foreach (AvailableStaffDto staff in _hiredEngineerList)
+                {
+                    await teamService.HireStaffAsync(staff);
+                }
+            }
+            //Mechanic
+            if (_hiredMechanicList != null)
+            {
+                foreach (AvailableStaffDto staff in _hiredMechanicList)
+                {
+                    await teamService.HireStaffAsync(staff);
+                }
+            }
+            //Data Analyst
+            if (_hiredDataAnalystList != null)
+            {
+                foreach (AvailableStaffDto staff in _hiredDataAnalystList)
+                {
+                    await teamService.HireStaffAsync(staff);
+                }
+            }
+            //Pit Crew
+            if (_hiredPitCrewList != null)
+            {
+                foreach (AvailableStaffDto staff in _hiredPitCrewList)
+                {
+                    await teamService.HireStaffAsync(staff);
+                }
+            }
+            navman.NavigateTo("/factory");
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+        
+    }
+}

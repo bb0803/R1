@@ -1,0 +1,66 @@
+﻿@namespace R1.FrontEnd.Web.Components.Cars
+@inject ICarService carService
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using Newtonsoft.Json
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Models.Shared
+@using R1.FrontEnd.Web.Services.Interfaces
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Aero</th>
+            <th>Brakes</th>
+            <th>Steering</th>
+            <th>Cost</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (AvailableChassisDto chassis in dataset)
+        {
+            <tr>
+                <td><a href="/results/details/@chassis.Id">@chassis.ChassisName</a></td>
+                <td>@chassis.Aero</td>
+                <td>@chassis.Brakes</td>
+                <td>@chassis.Steering</td>
+                <td></td>
+                <td>
+                    <button class="btn btn-outline-primary" @onclick="@(() => Purchase(@chassis.Id))"> <span class="oi oi-plus" aria-hidden="true"></span> Purchase </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<AvailableChassisDto> dataset { get; set; }
+    //private ResponseDto response = new ResponseDto { IsSuccess = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // response = await carService.GetAvailableChassisAsync();
+        // if (response.IsSuccess)
+        // {
+        //     availableChassis = JsonConvert.DeserializeObject<List<AvailableChassisDto>>(Convert.ToString(response.Result));
+        // }
+    }
+    private async Task Purchase(int chassisId)
+    {
+        var thisChassis = dataset.First(q => q.Id == chassisId);
+        var confirm = await js.InvokeAsync<bool>("confirm", $"Are You Sure You Want To purchase {thisChassis.ChassisName} as your chassis?");
+        if (confirm)
+        {
+            await carService.PurchaseChassisAsync(chassisId);
+            navman.NavigateTo("/teamsetup/engines");
+            //await OnDeleted.InvokeAsync(sessionLapTimeId);
+        }
+    }
+
+
+    
+}

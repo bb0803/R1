@@ -1,0 +1,52 @@
+﻿@page "/teamSetup/team"
+@inject ITeamService teamService
+@inject NavigationManager navman
+@inject IJSRuntime js
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Components
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Services.Interfaces
+@using Newtonsoft.Json
+
+<PageTitle>R1 - Setup Team</PageTitle>
+<h3>Team Setup</h3>
+
+<EditForm Model="teamSetupModel" OnValidSubmit="HandleTeamSetup">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    <br/>
+    <div class="form-group">
+        <label for="teamName">Team Name</label>
+        <InputText @bind-Value="teamSetupModel.TeamName" class="form-control" id="teamName" />
+        <ValidationMessage For="@(() => teamSetupModel.TeamName)" />
+    </div>
+    <br />
+     <button class="btn btn-primary" type="submit">
+        <span class="oi oi-pencil"></span>
+        Next
+    </button>
+</EditForm>
+
+@code {
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    public SetupWorldDto teamSetupModel = new SetupWorldDto{};
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    private async Task HandleTeamSetup()
+    {
+        SetupWorldDto swDto = new SetupWorldDto { };
+        swDto.ClassId = 6;
+        swDto.TeamName = this.teamSetupModel.TeamName;
+        var response = teamService.SetupWorldAsync(swDto);
+        navman.NavigateTo("/teamSetup/cars");
+
+    }
+}

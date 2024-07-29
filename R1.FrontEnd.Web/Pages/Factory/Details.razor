@@ -1,0 +1,75 @@
+﻿@page "/factory/details/{id:int}"
+@inject ITeamService teamService
+@inject NavigationManager navManager
+@using Newtonsoft.Json
+@using R1.FrontEnd.Web.Models
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Services.Interfaces
+<h3>SessionLapTime Details</h3>
+
+@if (@message != "" && message != null) {
+<div class="alert alert-danger">
+    <h4>@message</h4>
+</div>
+}
+
+<EditForm Model="teamStatus" OnValidSubmit="SaveTeamStatus">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <br />
+    <div class="form-group">
+        <label for="id">Id</label>
+        <InputNumber readonly @bind-Value="teamStatus.Id"  class="form-control" id="id" />
+        <ValidationMessage For="@(() => teamStatus.Id)" />
+    </div>
+    <br />
+    
+    <button class="btn btn-primary" type="submit">
+        <span class="oi oi-save"></span>
+        Save Job
+    </button>
+
+    <button @onclick="BackToList" class="btn btn-outline-secondary">
+        <span class="oi oi-media-skip-backward"></span>
+        Back To List
+    </button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Team teamStatus = new Team();
+
+    string message = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var response = await teamService.GetTeamStatusAsync();
+        if (response.IsSuccess)
+        {
+            teamStatus = JsonConvert.DeserializeObject<Team>(Convert.ToString(response.Result));
+            message = "";
+        }
+        message = response.Message;
+        //var resp = await sharedService.GetLookupValues("JobType");
+        //lookupValues = resp.Data;
+    }
+
+    private async Task SaveTeamStatus()
+    {
+        navManager.NavigateTo("/factory/");
+        // var response = await teamService.UpdateSessionLapTimeAsync(teamStaus);
+        // if (response.IsSuccess)
+        // {
+        //     BackToList();
+        // }
+        // message = response.Message;
+    }
+
+    private void BackToList()
+    {
+        navManager.NavigateTo("/SessionLapTimes/");
+    }
+
+}

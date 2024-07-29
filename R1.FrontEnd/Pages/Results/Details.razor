@@ -1,0 +1,92 @@
+﻿@page "/results/details/{id:int}"
+@inject ISessionLapTimeService sessionLapTimeService
+@inject NavigationManager navManager
+@using Newtonsoft.Json
+@using R1.FrontEnd.WA.Models
+@using R1.FrontEnd.WA.Models.Data
+@using R1.FrontEnd.WA.Services.Interfaces
+<h3>SessionLapTime Details</h3>
+
+@if (@message != "" && message != null) {
+<div class="alert alert-danger">
+    <h4>@message</h4>
+</div>
+}
+
+<EditForm Model="SessionLapTime" OnValidSubmit="SaveSessionLapTime">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <br />
+    <div class="form-group">
+        <label for="id">Id</label>
+        <InputNumber readonly @bind-Value="SessionLapTime.Id"  class="form-control" id="id" />
+        <ValidationMessage For="@(() => SessionLapTime.Id)" />
+    </div>
+    <br />
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="name">First Name</label>
+            <InputNumber @bind-Value="SessionLapTime.DriverId" class="form-control" id="name" />
+            <ValidationMessage For="@(() => SessionLapTime.DriverId)" />
+        </div>
+        <div class="col-4">
+            <label for="middleName">Middle Name</label>
+            <InputNumber @bind-Value="SessionLapTime.SessionId" class="form-control" id="middleName" />
+            <ValidationMessage For="@(() => SessionLapTime.SessionId)" />
+        </div>
+        <div class="col-4">
+            <label for="surname">Surname</label>
+            <InputNumber @bind-Value="SessionLapTime.BrakeTemp" class="form-control" id="surname" />
+            <ValidationMessage For="@(() => SessionLapTime.BrakeTemp)" />
+        </div>
+    </div>
+    <br />
+    
+    <button class="btn btn-primary" type="submit">
+        <span class="oi oi-save"></span>
+        Save Job
+    </button>
+
+    <button @onclick="BackToList" class="btn btn-outline-secondary">
+        <span class="oi oi-media-skip-backward"></span>
+        Back To List
+    </button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private SessionLapTime SessionLapTime = new SessionLapTime();
+
+    string message = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        var response = await sessionLapTimeService.GetSessionLapTimeAsync(id);
+        if (response.IsSuccess)
+        {
+            SessionLapTime = JsonConvert.DeserializeObject<SessionLapTime>(Convert.ToString(response.Result));
+            message = "";
+        }
+        message = response.Message;
+        //var resp = await sharedService.GetLookupValues("JobType");
+        //lookupValues = resp.Data;
+    }
+
+    private async Task SaveSessionLapTime()
+    {
+        var response = await sessionLapTimeService.UpdateSessionLapTimeAsync(SessionLapTime);
+        if (response.IsSuccess)
+        {
+            BackToList();
+        }
+        message = response.Message;
+    }
+
+    private void BackToList()
+    {
+        navManager.NavigateTo("/SessionLapTimes/");
+    }
+
+}

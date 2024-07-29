@@ -1,0 +1,62 @@
+﻿@page "/teamSetup/cars"
+@inject ICarService carService
+@inject IJSRuntime js
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Components.Cars
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Services.Interfaces
+@using Newtonsoft.Json
+
+<PageTitle>R1 - Team Setup</PageTitle>
+<h3>Team Setup</h3>
+
+
+<h4>Chassis</h4>
+<p> You need to select a chassis. You will be purchasing two of them as it is a two car team. </p>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(availableChassis == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+        <AvailableChassisTable dataset="availableChassis" />
+        
+        @if (chassisSelected)
+        {
+            <p>You have selected a chassis. It will cost you $600k for two chassis'.</p>
+            <br />
+            <p>Click Next to confirm your purchase.</p>
+            <br />
+            <a class="btn btn-secondary float-end" href="/TeamSetup/engines" title="Next - Go select engine"><span class="oi oi-plus" aria-hidden="true"></span> Next</a>
+        }
+    }
+}
+
+@code {
+    public List<AvailableChassisDto> availableChassis;
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    private bool chassisSelected = false;
+    protected override async Task OnInitializedAsync()
+    {
+        response = await carService.GetAvailableChassisAsync();
+        if (response.IsSuccess)
+        {
+            availableChassis = JsonConvert.DeserializeObject<List<AvailableChassisDto>>(Convert.ToString(response.Result));
+        }
+    }
+
+
+
+}

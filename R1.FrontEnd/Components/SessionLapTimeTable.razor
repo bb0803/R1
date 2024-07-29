@@ -1,0 +1,71 @@
+﻿@namespace R1.FrontEnd.WA.Components
+@inject ISessionLapTimeService sessionLapTimeService
+@inject IJSRuntime js
+@using R1.FrontEnd.WA.Models.Data
+@using R1.FrontEnd.WA.Models.Shared
+@using R1.FrontEnd.WA.Services.Interfaces
+
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <Virtualize ItemsProvider="LoadSessionLapTimes" Context="sessionLapTime">
+            <tr>
+                <td><a href="/results/details/@sessionLapTime.Id">@sessionLapTime.Id</a></td>
+                <td><a href="/results/details/@sessionLapTime.Id">@sessionLapTime.DriverId</a></td>
+                <td>@sessionLapTime.SessionId</td>
+                <td>
+                    <a class="btn btn-primary" href="/sessionLapTimes/details/@sessionLapTime.Id"> <span class="oi oi-book" aria-hidden="true"></span> New Share transaction </a>
+                    <AuthorizeView Roles="Administrator">
+                        <a class="btn btn-warning" href="/sessionLapTimes/update/@sessionLapTime.Id"> <span class="oi oi-pencil" aria-hidden="true"></span> Edit </a>
+                        <button class="btn btn-danger" @onclick="@(() => Delete(@sessionLapTime.Id))"> <span class="oi oi-delete" aria-hidden="true"></span> Hide </button>
+                    </AuthorizeView>
+                </td>
+            </tr>
+        </Virtualize>
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<SessionLapTime> SessionLapTimes { get; set; }
+
+    [Parameter]
+    public int TotalSize { get; set; }
+
+    [Parameter]
+    public EventCallback<QueryParameters> OnScroll { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnDeleted { get; set; }
+
+    [Parameter]
+    public int? CustomerId { get; set; } = -1;
+
+    private async ValueTask<ItemsProviderResult<SessionLapTime>> LoadSessionLapTimes(ItemsProviderRequest request)
+    {
+        var sessionLapTimeNum = Math.Min(request.Count, TotalSize - request.StartIndex);
+        await OnScroll.InvokeAsync(new QueryParameters
+        {
+            StartIndex = request.StartIndex,
+            PageSize = sessionLapTimeNum == 0 ? request.Count : sessionLapTimeNum
+        });
+        return new ItemsProviderResult<SessionLapTime>(SessionLapTimes, 5);
+    }
+
+    private async Task Delete(int sessionLapTimeId)
+    {
+        var sessionLapTimes = SessionLapTimes.First(q => q.Id == sessionLapTimeId);
+        var confirm = await js.InvokeAsync<bool>("confirm", $"Are You Sure You Want To Delete {sessionLapTimes.DriverId} {sessionLapTimes.SessionId}?");
+        if (confirm)
+        {
+            await OnDeleted.InvokeAsync(sessionLapTimeId);
+        }
+    }
+}

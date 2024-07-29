@@ -1,0 +1,18 @@
+﻿@namespace R1.FrontEnd.Web.Components.Shared
+@inject IUserService userService
+@inject NavigationManager navman
+@using Newtonsoft.Json
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Services.Interfaces
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ResponseDto checkStatus = await userService.CheckStatusAsync();
+        var checkStatusDto = JsonConvert.DeserializeObject<CheckStatusDto>(Convert.ToString(checkStatus.Result));
+        navman.NavigateTo(checkStatusDto.URL);
+    }
+    
+
+}

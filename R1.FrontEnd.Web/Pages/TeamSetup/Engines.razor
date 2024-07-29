@@ -1,0 +1,62 @@
+﻿@page "/teamSetup/engines"
+@inject ICarService carService
+@inject IJSRuntime js
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Components.Cars
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Services.Interfaces
+@using Newtonsoft.Json
+
+<PageTitle>R1 - Select engine supplier</PageTitle>
+<h3>Select Engines</h3>
+
+
+<h4>Engine</h4>
+<p> You need to select an engine. Diffwrent engine suppliers have different packages. </p>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(availableEngines == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+        <AvailableEnginesTable dataset="availableEngines" />
+
+        @if (engineSelected)
+        {
+            <p>You have selected an engine supplier.'.</p>
+            <br />
+            <p>Click Next to confirm your purchase.</p>
+            <br />
+            <a class="btn btn-secondary float-end" href="/TeamSetup/drivers" title="Next - Go select drivers"><span class="oi oi-plus" aria-hidden="true"></span> Next</a>
+        }
+    }
+}
+
+@code {
+    public List<AvailableEngineDto> availableEngines;
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    private bool engineSelected = false;
+    protected override async Task OnInitializedAsync()
+    {
+        response = await carService.GetAvailableEnginesAsync();
+        if (response.IsSuccess)
+        {
+            availableEngines = JsonConvert.DeserializeObject<List<AvailableEngineDto>>(Convert.ToString(response.Result));
+        }
+    }
+
+
+
+}

@@ -1,0 +1,112 @@
+﻿@namespace R1.FrontEnd.Web.Components.Team
+@inject ITeamService teamService
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using Newtonsoft.Json
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Models.Shared
+@using R1.FrontEnd.Web.Services.Interfaces
+<h5>@StaffType</h5>
+@if (_hiredList.Count > 0) {
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Rating</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (AvailableStaffDto cStaff in _hiredList)
+            {
+                <tr>
+                    <td>@cStaff.StaffName</td>
+                    <td>@cStaff.Rating</td>
+                    <td>@string.Format("{0:$#,##0}", cStaff.Salary)</td>
+                    <td></td>
+                    <td>
+                        <button class="btn btn-outline-primary" @onclick="@(() => Remove(cStaff.Id))"> <span class="oi oi-plus" aria-hidden="true"></span> Remove </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Rating</th>
+            <th>Salary</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (AvailableStaffDto staff in dataset.FindAll(s => s.StaffType == StaffType))
+        {
+            <tr>
+                <td>@staff.StaffName</td>
+                <td>@staff.Rating</td>
+                <td>@string.Format("{0:$#,##0}", staff.Salary)</td>
+                <td></td>
+                <td>
+                    @if (_hiredList.Count < LimitTo)
+                    {
+                        <button class="btn btn-outline-primary" @onclick="@(() => Hire(@staff.Id))"> <span class="oi oi-plus" aria-hidden="true"></span> Hire </button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<br />
+@code {
+    [Parameter]
+    public List<AvailableStaffDto> dataset { get; set; }
+    [Parameter]
+    public byte LimitTo { get; init; }
+    [Parameter]
+    public string StaffType { get; init; }
+    [Parameter]
+    public bool Status { get; set; }
+    [Parameter]
+    public List<AvailableStaffDto> HiredList { get; set; }
+    [Parameter]
+    public EventCallback<bool> StatusChanged { get; set; }
+    [Parameter]
+    public EventCallback<List<AvailableStaffDto>> HiredListChanged { get; set; }
+
+    public List<AvailableStaffDto> _hiredList = new List<AvailableStaffDto> { };
+
+    private async Task Hire(int staffId)
+    {
+        var thisStaff = dataset.First(q => q.Id == staffId);
+        if (_hiredList.Count <= LimitTo)
+        {
+            _hiredList.Add(thisStaff);
+            dataset.Remove(thisStaff);
+        }
+        else
+        {
+            await js.InvokeAsync<bool>("alert", $"You are not allowed to hire more than {LimitTo} {StaffType}. Remove existing {StaffType} before hiring this one.");
+        }
+        await UpdateStatus();
+    }
+
+    private async Task Remove(int driverId)
+    {
+        var thisStaff = _hiredList.First(q => q.Id == driverId);
+        dataset.Add(thisStaff);
+        _hiredList.Remove(thisStaff);
+        await UpdateStatus();
+    } 
+
+    async Task UpdateStatus()
+    {
+        Status = (_hiredList.Count >= 1);
+        HiredList = _hiredList;
+        await StatusChanged.InvokeAsync(Status);
+        await HiredListChanged.InvokeAsync(HiredList);
+    }
+}

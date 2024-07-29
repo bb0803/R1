@@ -1,0 +1,134 @@
+﻿@namespace R1.FrontEnd.Web.Components.Drivers
+@inject IDriverService driverService
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using Newtonsoft.Json
+@using R1.FrontEnd.Web.Models.API
+@using R1.FrontEnd.Web.Models.Data
+@using R1.FrontEnd.Web.Models.Dto
+@using R1.FrontEnd.Web.Models.Shared
+@using R1.FrontEnd.Web.Services.Interfaces
+@if (chosenDrivers.Count > 0) {
+@* <EditForm Model="chosenDriver">
+
+        <div class="form-group">
+        <label for="id">Id</label>
+        <InputText readonly @bind-Value="chosenDriver.DriverName"  class="form-control" id="driverName" />
+    </div>
+</EditForm> *@
+    <table class="table table-responsive">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Speed</th>
+                <th>Braking</th>
+                <th>Cornering</th>
+                <th>Overtaking</th>
+                <th>Defending</th>
+                <th>Consitency</th>
+                <th>Experience</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Driver cDrv in chosenDrivers)
+            {
+                <tr>
+                    <td>@cDrv.DriverName</td>
+                    <td>@cDrv.Speed</td>
+                    <td>@cDrv.Braking</td>
+                    <td>@cDrv.Cornering</td>
+                    <td>@cDrv.Overtaking</td>
+                    <td>@cDrv.Defending</td>
+                    <td>@cDrv.Consistency</td>
+                    <td>@cDrv.Experience</td>
+                    <td></td>
+                    <td>
+                        <button class="btn btn-outline-primary" @onclick="@(() => Remove(cDrv.Id))"> <span class="oi oi-plus" aria-hidden="true"></span> Remove </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+@if (chosenDrivers.Count >= 2)
+{
+    <button class="btn btn-outline-primary" @onclick="@(() => SaveAndNext())"> <span class="oi oi-plus" aria-hidden="true"></span> Next </button>
+}
+<table class="table table-responsive">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Speed</th>
+            <th>Braking</th>
+            <th>Cornering</th>
+            <th>Overtaking</th>
+            <th>Defending</th>
+            <th>Consitency</th>
+            <th>Experience</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Driver drv in dataset)
+        {
+            <tr>
+                <td>@drv.DriverName</td>
+                <td>@drv.Speed</td>
+                <td>@drv.Braking</td>
+                <td>@drv.Cornering</td>
+                <td>@drv.Overtaking</td>
+                <td>@drv.Defending</td>
+                <td>@drv.Consistency</td>
+                <td>@drv.Experience</td>
+                <td></td>
+                <td>
+                    @if (chosenDrivers.Count <= 1)
+                    {
+                        <button class="btn btn-outline-primary" @onclick="@(() => Purchase(@drv.Id))"> <span class="oi oi-plus" aria-hidden="true"></span> Hire </button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<Driver> dataset { get; set; }
+    public List<Driver> chosenDrivers = new List<Driver> { };
+
+    private async Task Purchase(int driverId)
+    {
+        var thisDriver = dataset.First(q => q.Id == driverId);
+        if (chosenDrivers.Count <= 1)
+        {
+            chosenDrivers.Add(thisDriver);
+            dataset.Remove(thisDriver);
+        }
+        else
+        {
+            chosenDrivers.Add(thisDriver);
+            var confirm = await js.InvokeAsync<bool>("confirm", $"Are you sure you want to hire {chosenDrivers[0].DriverName} and {chosenDrivers[1].DriverName}?");
+            if (confirm)
+            {
+                //await driverService.HireDriverAsync(chosenDriver.Id);
+                //await driverService.HireDriverAsync(driverId);
+                //navman.NavigateTo("/factory");
+            }
+        }
+    }
+
+    private async Task Remove(int driverId)
+    {
+        var thisDriver = chosenDrivers.First(q => q.Id == driverId);
+        dataset.Add(thisDriver);
+        chosenDrivers.Remove(thisDriver);
+    }
+
+    private async Task SaveAndNext()
+    {
+        await driverService.HireDriverAsync(chosenDrivers[0].Id);
+        await driverService.HireDriverAsync(chosenDrivers[1].Id);
+        navman.NavigateTo("/teamSetup/staff");
+    }    
+}
